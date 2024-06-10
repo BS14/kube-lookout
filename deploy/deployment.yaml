@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1 # for versions before 1.8.0 use apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kube-lookout
@@ -22,8 +22,15 @@ spec:
       serviceAccount: kube-lookout
       containers:
       - name: kube-lookout
-        image: davidjmarkey/kube-lookout:0.2
+        image: bnay14/kube-notify:1.0.0
         imagePullPolicy: Always
         env:
         - name: SLACK_TOKEN
-          value: "insert token here"
+          valueFrom:
+            secretKeyRef:
+              name: slack-secrets
+              key: SLACK_TOKEN
+        - name: SLACK_CHANNEL
+          value: "#general"
+        - name: CLUSTER_NAME
+          value: "Kubernetes Cluster"
