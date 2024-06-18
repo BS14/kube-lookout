@@ -41,14 +41,15 @@ class KubeLookout:
     ]
 
     def __init__(self, warning_image, progress_image, ok_image,
-                 slack_key, slack_channel, cluster_name):
+                 slack_key, slack_channel_rollout, slack_channel_degraded, cluster_name):
         super().__init__()
         self.warning_image = warning_image
         self.ok_image = ok_image
         self.progress_image = progress_image
         self.slack_client = None
         self.slack_key = slack_key
-        self.slack_channel = slack_channel
+        self.slack_channel_rollout = slack_channel_rollout
+        self.slack_channel_degraded = slack_channel_degraded
         self.cluster_name = cluster_name
         self.rollouts = {}
         self.degraded = set()
@@ -85,7 +86,7 @@ class KubeLookout:
         if deployment_key not in self.rollouts and \
                 deployment.status.updated_replicas is None:
             blocks = self._generate_deployment_rollout_block(deployment)
-            resp = self._send_slack_block(blocks, self.slack_channel)
+            resp = self._send_slack_block(blocks, self.slack_channel_rollout)
             self.rollouts[deployment_key] = resp
 
         elif deployment_key in self.rollouts:
@@ -103,14 +104,14 @@ class KubeLookout:
                 self.rollouts.pop(deployment_key)
         elif ready_replicas < deployment.spec.replicas:
             blocks = self._generate_deployment_degraded_block(deployment)
-            self._send_slack_block(blocks, self.slack_channel)
+            self._send_slack_block(blocks, self.slack_channel_degraded)
             self.degraded.add(deployment_key)
 
         elif (deployment_key in self.degraded and
               ready_replicas >= deployment.spec.replicas):
             self.degraded.remove(deployment_key)
             blocks = self._generate_deployment_not_degraded_block(deployment)
-            self._send_slack_block(blocks, self.slack_channel)
+            self._send_slack_block(blocks, self.slack_channel_degraded)
 
     def _handle_event(self, deployment):
         self._handle_deployment_change(deployment)
@@ -216,11 +217,14 @@ if __name__ == "__main__":
                                   "commons/thumb/f/fb/Yes_check.svg/"
                                   "200px-Yes_check.svg.png")
     env_slack_token = os.environ["SLACK_TOKEN"]
-    env_slack_channel = os.environ.get("SLACK_CHANNEL", "#general")
+    env_slack_channel_rollout = os.environ.get("SLACK_CHANNEL_ROLLOUT", "#rollouts")
+    env_slack_channel_degraded = os.environ.get("SLACK_CHANNEL_DEGRADED", "#degraded")
     env_cluster_name = os.environ.get("CLUSTER_NAME", "Kubernetes Cluster")
     kube_deploy_watch = KubeLookout(env_warning_image,
                                     env_progress_image,
                                     env_ok_image, env_slack_token,
-                                    env_slack_channel, env_cluster_name)
+                                    env_slack_channel_rollout,
+                                    env_slack_channel_degraded,
+                                    env_cluster_name)
 
     kube_deploy_watch.main_loop()
