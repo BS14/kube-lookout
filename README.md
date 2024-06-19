@@ -10,8 +10,6 @@ It listens to kubernetes deployment states and is interested when:
 
 It posts nice dynamic status updates for the above to slack
 
-*Please don't use this to replace more mature monitoring tools (prometheus etc)*, this is for informational purposes only.
-
 ## For early adopters
 
 Check deploy/* for example manifests.
