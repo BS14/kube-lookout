@@ -1,5 +1,5 @@
 IMAGE := bnay14/kube-notify
-RELEASE := 1.0.1
+RELEASE := 2.0.0
 
 test:
 	pytest
