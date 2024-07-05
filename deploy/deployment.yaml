@@ -22,7 +22,7 @@ spec:
       serviceAccount: kube-lookout
       containers:
       - name: kube-lookout
-        image: bnay14/kube-notify:1.0.0
+        image: bnay14/kube-notify:2.0.0
         imagePullPolicy: Always
         env:
         - name: SLACK_TOKEN
@@ -30,7 +30,9 @@ spec:
             secretKeyRef:
               name: slack-secrets
               key: SLACK_TOKEN
-        - name: SLACK_CHANNEL
-          value: "#general"
+        - name: SLACK_CHANNEL_DEGRADED
+          value: "#degraded"
+        - name: SLACK_CHANNEL_ROLLOUT
+          value: "#rollouts"
         - name: CLUSTER_NAME
           value: "Kubernetes Cluster"
