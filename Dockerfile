@@ -1,20 +1,22 @@
-FROM python:3.9-alpine
+# ── Stage 1: install dependencies ────────────────────────────────────────────
+FROM python:3.13-alpine AS builder
 
-# Add requirements.txt
-ADD requirements.txt /tmp
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
-# Install necessary packages and dependencies
-RUN apk update && \
-    apk add --no-cache libffi openssl && \
-    apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev && \
-    pip install --upgrade pip && \
-    pip install wheel && \
-    pip install -r /tmp/requirements.txt --ignore-installed six && \
-    apk del .build-deps && \
-    rm -rf /var/cache/apk/*
+COPY requirements.txt /tmp/
+RUN python -m venv /venv && \
+    /venv/bin/pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Add the lookout script
-ADD lookout.py /root
+# ── Stage 2: runtime image ────────────────────────────────────────────────────
+FROM python:3.13-alpine AS runtime
 
-# Set the entrypoint
-ENTRYPOINT ["python3", "-u", "/root/lookout.py"]
+# Runtime-only shared libs needed by cryptography / SSL
+RUN apk add --no-cache libffi openssl
+
+COPY --from=builder /venv /venv
+COPY pyproject.toml /app/
+COPY kube_lookout/ /app/kube_lookout/
+
+RUN /venv/bin/pip install --no-cache-dir --no-deps /app
+
+ENTRYPOINT ["/venv/bin/python", "-u", "-m", "kube_lookout.main"]
