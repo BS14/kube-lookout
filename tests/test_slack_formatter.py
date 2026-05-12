@@ -1,5 +1,5 @@
 import pytest
-from slack_formatter import (
+from kube_lookout.slack_formatter import (
     _progress_bar,
     generate_deployment_rollout_block,
     generate_deployment_degraded_block,

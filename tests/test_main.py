@@ -1,5 +1,5 @@
 import pytest
-from main import KubeLookout
+from kube_lookout.main import KubeLookout
 
 
 # ── Mock helpers ──────────────────────────────────────────────────────────────

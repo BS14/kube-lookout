@@ -1,6 +1,6 @@
-import slack_formatter
-import kube_watchers
-from slack_notifier import SlackNotifier
+from . import slack_formatter
+from . import kube_watchers
+from .slack_notifier import SlackNotifier
 
 
 class KubeLookout:
@@ -62,8 +62,8 @@ class KubeLookout:
             self.notifier.post_message(self.slack_channel_degraded, blocks)
 
 
-if __name__ == "__main__":
-    import config
+def main():
+    from . import config
 
     notifier = SlackNotifier(config.SLACK_TOKEN)
     lookout = KubeLookout(
@@ -76,3 +76,7 @@ if __name__ == "__main__":
         warning_image=config.WARNING_IMAGE,
     )
     kube_watchers.watch_deployments_loop(lookout.handle_deployment_event)
+
+
+if __name__ == "__main__":
+    main()

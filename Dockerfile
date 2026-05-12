@@ -1,20 +1,16 @@
 FROM python:3.9-alpine
 
-# Add requirements.txt
-ADD requirements.txt /tmp
+ADD requirements.txt pyproject.toml /app/
 
-# Install necessary packages and dependencies
 RUN apk update && \
     apk add --no-cache libffi openssl && \
     apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev && \
-    pip install --upgrade pip && \
-    pip install wheel && \
-    pip install -r /tmp/requirements.txt --ignore-installed six && \
+    pip install --upgrade pip wheel && \
+    pip install -r /app/requirements.txt --ignore-installed six && \
     apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
-# Add application modules
-ADD config.py kube_watchers.py slack_formatter.py slack_notifier.py main.py /root/
+ADD kube_lookout/ /app/kube_lookout/
+RUN pip install --no-deps /app
 
-# Set the entrypoint
-ENTRYPOINT ["python3", "-u", "/root/main.py"]
+ENTRYPOINT ["python3", "-u", "-m", "kube_lookout.main"]
