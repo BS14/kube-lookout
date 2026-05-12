@@ -13,8 +13,8 @@ RUN apk update && \
     apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
-# Add the lookout script
-ADD lookout.py /root
+# Add application modules
+ADD config.py kube_watchers.py slack_formatter.py slack_notifier.py main.py /root/
 
 # Set the entrypoint
-ENTRYPOINT ["python3", "-u", "/root/lookout.py"]
+ENTRYPOINT ["python3", "-u", "/root/main.py"]
