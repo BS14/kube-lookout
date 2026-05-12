@@ -1,16 +1,22 @@
-FROM python:3.13-alpine
+# ── Stage 1: install dependencies ────────────────────────────────────────────
+FROM python:3.13-alpine AS builder
 
-ADD requirements.txt pyproject.toml /app/
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
-RUN apk update && \
-    apk add --no-cache libffi openssl && \
-    apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev && \
-    pip install --upgrade pip wheel && \
-    pip install -r /app/requirements.txt --ignore-installed six && \
-    apk del .build-deps && \
-    rm -rf /var/cache/apk/*
+COPY requirements.txt /tmp/
+RUN python -m venv /venv && \
+    /venv/bin/pip install --no-cache-dir -r /tmp/requirements.txt
 
-ADD kube_lookout/ /app/kube_lookout/
-RUN pip install --no-deps /app
+# ── Stage 2: runtime image ────────────────────────────────────────────────────
+FROM python:3.13-alpine AS runtime
 
-ENTRYPOINT ["python3", "-u", "-m", "kube_lookout.main"]
+# Runtime-only shared libs needed by cryptography / SSL
+RUN apk add --no-cache libffi openssl
+
+COPY --from=builder /venv /venv
+COPY pyproject.toml /app/
+COPY kube_lookout/ /app/kube_lookout/
+
+RUN /venv/bin/pip install --no-cache-dir --no-deps /app
+
+ENTRYPOINT ["/venv/bin/python", "-u", "-m", "kube_lookout.main"]
