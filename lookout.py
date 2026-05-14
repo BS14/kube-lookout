@@ -14,7 +14,7 @@ def _generate_progress_bar(position, max_value):
     filled_char = "⬛"
     empty_char = "⬜"
     return (filled_char * int(filled_squares)) + (
-            empty_char * (20 - int(filled_squares))) + "\n"
+        empty_char * (20 - int(filled_squares))) + "\n"
 
 
 class KubeLookout:
@@ -91,9 +91,9 @@ class KubeLookout:
 
         elif deployment_key in self.rollouts:
             rollout_complete = (
-                    deployment.status.updated_replicas ==
-                    deployment.status.replicas ==
-                    ready_replicas)
+                deployment.status.updated_replicas ==
+                deployment.status.replicas ==
+                ready_replicas)
             blocks = self._generate_deployment_rollout_block(deployment,
                                                              rollout_complete)
             self.rollouts[deployment_key] = self._send_slack_block(
@@ -207,18 +207,16 @@ class KubeLookout:
 if __name__ == "__main__":
     env_warning_image = os.environ.get(
         "WARNING_IMAGE",
-        "https://upload.wikimedia.org/wikipedia/"
-        "commons/thumb/6/6e/Dialog-warning.svg/"
-        "200px-Dialog-warning.svg.png")
+        "https://raw.githubusercontent.com/BS14/kube-lookout/refs/heads/main/images/Dialog-warning.svg.png")
     env_progress_image = os.environ.get("PROGRESS_IMAGE",
-                                        "https://i.gifer.com/80ZN.gif")
+                                        "https://raw.githubusercontent.com/BS14/kube-lookout/refs/heads/main/images/80ZN.gif")
     env_ok_image = os.environ.get("OK_IMAGE",
-                                  "https://upload.wikimedia.org/wikipedia/"
-                                  "commons/thumb/f/fb/Yes_check.svg/"
-                                  "200px-Yes_check.svg.png")
+                                  "https://raw.githubusercontent.com/BS14/kube-lookout/refs/heads/main/images/Yes_check.svg.png")
     env_slack_token = os.environ["SLACK_TOKEN"]
-    env_slack_channel_rollout = os.environ.get("SLACK_CHANNEL_ROLLOUT", "#rollouts")
-    env_slack_channel_degraded = os.environ.get("SLACK_CHANNEL_DEGRADED", "#degraded")
+    env_slack_channel_rollout = os.environ.get(
+        "SLACK_CHANNEL_ROLLOUT", "#rollouts")
+    env_slack_channel_degraded = os.environ.get(
+        "SLACK_CHANNEL_DEGRADED", "#degraded")
     env_cluster_name = os.environ.get("CLUSTER_NAME", "Kubernetes Cluster")
     kube_deploy_watch = KubeLookout(env_warning_image,
                                     env_progress_image,
